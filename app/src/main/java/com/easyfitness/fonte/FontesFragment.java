@@ -66,11 +66,10 @@ import com.easyfitness.utils.ExpandedListView;
 import com.easyfitness.utils.ImageUtil;
 import com.easyfitness.utils.Keyboard;
 import com.easyfitness.utils.UnitConverter;
+import com.easyfitness.views.MyTimePickerDialog;
 import com.easyfitness.views.WorkoutValuesInputView;
-import com.ikovac.timepickerwithseconds.MyTimePickerDialog;
 import com.mikhaellopez.circularimageview.CircularImageView;
 import com.onurkaganaldemir.ktoastlib.KToast;
-
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;

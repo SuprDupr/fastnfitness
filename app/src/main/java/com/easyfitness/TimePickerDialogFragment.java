@@ -5,7 +5,7 @@ import android.os.Bundle;
 
 import androidx.fragment.app.DialogFragment;
 
-import com.ikovac.timepickerwithseconds.MyTimePickerDialog;
+import com.easyfitness.views.MyTimePickerDialog;
 
 //@SuppressLint("ValidFragment")
 public class TimePickerDialogFragment extends DialogFragment {
