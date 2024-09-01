@@ -48,6 +48,10 @@ import com.easyfitness.DAO.record.DAOFonte;
 import com.easyfitness.DAO.record.DAORecord;
 import com.easyfitness.DAO.record.DAOStatic;
 import com.easyfitness.DAO.record.Record;
+import com.easyfitness.DAO.record.domain.CardioRecord;
+import com.easyfitness.DAO.record.domain.CardioTemplate;
+import com.easyfitness.DAO.record.domain.StrengthRecord;
+import com.easyfitness.DAO.record.domain.StrengthTemplate;
 import com.easyfitness.DatePickerDialogFragment;
 import com.easyfitness.MainActivity;
 import com.easyfitness.AppViMo;
@@ -281,14 +285,15 @@ public class FontesFragment extends Fragment {
             tmpWeight = UnitConverter.weightConverter(tmpWeight, workoutValuesInputView.getWeightUnit(), WeightUnit.KG); // Always convert to KG
 
             if (mDisplayType == DisplayType.FREE_WORKOUT_DISPLAY) {
-                mDbBodyBuilding.addStrengthRecordToFreeWorkout(date,
-                        machineEdit.getText().toString(),
-                        workoutValuesInputView.getSets(),
-                        workoutValuesInputView.getReps(),
-                        tmpWeight, // Always save in KG
-                        workoutValuesInputView.getWeightUnit(), // Store Unit for future display
-                        "", //Notes
-                        getProfile().getId());
+                mDbBodyBuilding.addStrengthRecordToFreeWorkout(new StrengthRecord()
+                        .setDate(date)
+                        .setExercise(machineEdit.getText().toString())
+                        .setSets(workoutValuesInputView.getSets())
+                        .setReps(workoutValuesInputView.getReps())
+                        .setWeight(tmpWeight)
+                        .setWeightUnit(workoutValuesInputView.getWeightUnit())
+                        .setNotes("")
+                        .setProfileId(getProfile().getId()));
 
                 float iTotalWeightSession = mDbBodyBuilding.getTotalWeightSession(date, getProfile());
                 float iTotalWeight = mDbBodyBuilding.getTotalWeightMachine(date, machineEdit.getText().toString(), getProfile());
@@ -308,14 +313,18 @@ public class FontesFragment extends Fragment {
                 }
             } else if (mDisplayType == DisplayType.PROGRAM_EDIT_DISPLAY) {
                 for (int i = 0; i < workoutValuesInputView.getSets(); i++) {
-                    mDbBodyBuilding.addStrengthTemplateToProgram(mProgramId, date,
-                            machineEdit.getText().toString(),
-                            1,
-                            workoutValuesInputView.getReps(),
-                            tmpWeight, // Always save in KG
-                            workoutValuesInputView.getWeightUnit(),
-                            workoutValuesInputView.getRestTime(),
-                            recordList.getCount()
+                    mDbBodyBuilding.addStrengthTemplateToProgram(
+                            new StrengthTemplate(
+                                    mProgramId,
+                                    date,
+                                    machineEdit.getText().toString(),
+                                    1,
+                                    workoutValuesInputView.getReps(),
+                                    tmpWeight,
+                                    workoutValuesInputView.getWeightUnit(),
+                                    workoutValuesInputView.getRestTime(),
+                                    recordList.getCount()
+                            )
                     );
                 }
             }
@@ -385,12 +394,15 @@ public class FontesFragment extends Fragment {
             }
 
             if (mDisplayType == DisplayType.FREE_WORKOUT_DISPLAY) {
-                mDbCardio.addCardioRecordToFreeWorkout(date,
-                        machineEdit.getText().toString(),
-                        distance,
-                        duration,
-                        getProfile().getId(),
-                        workoutValuesInputView.getDistanceUnit());
+                mDbCardio.addCardioRecordToFreeWorkout(
+                        new CardioRecord()
+                                .setMachine(machineEdit.getText().toString())
+                                .setDistance(distance)
+                                .setDuration(duration)
+                                .setDuration(duration)
+                                .setProfileId(getProfile().getId())
+                                .setDistanceUnit(workoutValuesInputView.getDistanceUnit())
+                );
 
                 //--Launch Rest Dialog
                 boolean bLaunchRest = workoutValuesInputView.isRestTimeActivated();
@@ -402,14 +414,16 @@ public class FontesFragment extends Fragment {
                     cdd.show();
                 }
             } else if (mDisplayType == DisplayType.PROGRAM_EDIT_DISPLAY) {
-                mDbCardio.addCardioTemplateToProgram(mProgramId,
-                        date,
-                        machineEdit.getText().toString(),
-                        distance,
-                        workoutValuesInputView.getDistanceUnit(),
-                        duration,
-                        workoutValuesInputView.getRestTime(),
-                        recordList.getCount()
+                mDbCardio.addCardioTemplateToProgram(
+                        new CardioTemplate()
+                                .setProgramId(mProgramId)
+                                .setDate(date)
+                                .setExerciseName(machineEdit.getText().toString())
+                                .setDistance(distance)
+                                .setDistanceUnit(workoutValuesInputView.getDistanceUnit())
+                                .setDuration(duration)
+                                .setRestTime(workoutValuesInputView.getRestTime())
+                                .setTemplateOrder(recordList.getCount())
                 );
             }
         }

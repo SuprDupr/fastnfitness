@@ -4,8 +4,9 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.easyfitness.DAO.Profile;
+import com.easyfitness.DAO.record.domain.CardioRecord;
+import com.easyfitness.DAO.record.domain.CardioTemplate;
 import com.easyfitness.R;
-import com.easyfitness.enums.DistanceUnit;
 import com.easyfitness.enums.ExerciseType;
 import com.easyfitness.enums.ProgramRecordStatus;
 import com.easyfitness.enums.RecordType;
@@ -35,22 +36,40 @@ public class DAOCardio extends DAORecord {
         mContext = context;
     }
 
-    /**
-     * @param pDate
-     * @param pMachine
-     * @param pDistance
-     * @param pDuration
-     * @param pProfileId
-     * @return
-     */
-    public long addCardioRecordToFreeWorkout(Date pDate, String pMachine, float pDistance, long pDuration, long pProfileId, DistanceUnit pDistanceUnit) {
-        return addRecordToFreeWorkout(pDate, pMachine, ExerciseType.CARDIO, 0, 0, 0, WeightUnit.KG, 0, pDistance, pDistanceUnit, pDuration, "", pProfileId);
+    public void addCardioRecordToFreeWorkout(final CardioRecord cardioRecord) {
+        addRecordToFreeWorkout(
+                cardioRecord.getDate(),
+                cardioRecord.getMachine(),
+                ExerciseType.CARDIO,
+                0,
+                0,
+                0,
+                WeightUnit.LBS,
+                0,
+                cardioRecord.getDistance(),
+                cardioRecord.getDistanceUnit(),
+                cardioRecord.getDuration(),
+                "",
+                cardioRecord.getProfileId());
     }
 
-    public long addCardioTemplateToProgram(long pProgramId, Date pDate, String pExerciseName, float pDistance, DistanceUnit pDistanceUnit, long pDuration, int restTime, int templateOrder) {
-        return addTemplateToProgram(pDate, pExerciseName, ExerciseType.CARDIO, 0, 0, 0,
-                WeightUnit.KG, 0, pDistance, pDistanceUnit, pDuration, "",
-                pProgramId, restTime, templateOrder);
+    public void addCardioTemplateToProgram(final CardioTemplate cardioTemplate) {
+        addTemplateToProgram(
+                cardioTemplate.getDate(),
+                cardioTemplate.getExerciseName(),
+                ExerciseType.CARDIO,
+                0,
+                0,
+                0,
+                WeightUnit.LBS,
+                0,
+                cardioTemplate.getDistance(),
+                cardioTemplate.getDistanceUnit(),
+                cardioTemplate.getDuration(),
+                "",
+                cardioTemplate.getProgramId(),
+                cardioTemplate.getRestTime(),
+                cardioTemplate.getTemplateOrder());
     }
 
     // Getting Function records

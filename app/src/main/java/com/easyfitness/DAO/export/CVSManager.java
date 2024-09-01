@@ -30,6 +30,7 @@ import com.easyfitness.DAO.progressimages.DAOProgressImage;
 import com.easyfitness.DAO.record.DAOCardio;
 import com.easyfitness.DAO.record.DAORecord;
 import com.easyfitness.DAO.record.Record;
+import com.easyfitness.DAO.record.domain.CardioRecord;
 import com.easyfitness.enums.DistanceUnit;
 import com.easyfitness.enums.ExerciseType;
 import com.easyfitness.enums.ProgramRecordStatus;
@@ -72,9 +73,9 @@ public class CVSManager {
     static private final String EXERCISE_TYPE = "EXERCISE_TYPE";
     static private final String NOTES = "NOTES";
     static private final String SETS = "SETS";
-    static private  final String REPS = "REPS";
+    static private final String REPS = "REPS";
     static private final String WEIGHT = "WEIGHT";
-    static private  final String WEIGHT_UNIT = "WEIGHT_UNIT";
+    static private final String WEIGHT_UNIT = "WEIGHT_UNIT";
     static private final String DISTANCE = "DISTANCE";
     static private final String DURATION = "DURATION";
     static private final String DISTANCE_UNIT = "DISTANCE_UNIT"; // 0:km 1:mi
@@ -104,7 +105,7 @@ public class CVSManager {
     static private final String FAVORITE = "FAVORITE";
 
     static private final String TABLE_RECORD = "RECORD";
-    static private final String TABLE_BODYMEASURE= "BODYMEASURE";
+    static private final String TABLE_BODYMEASURE = "BODYMEASURE";
     static private final String TABLE_BODYPART = "BODYPART";
     static private final String TABLE_PROGRAM = "PROGRAM";
     static private final String TABLE_PROGRAM_TEMPLATE = "TEMPLATE";
@@ -146,7 +147,7 @@ public class CVSManager {
 
     private ZipOutputStream createNewCSVZipFile(String name, String destFolder, Profile pProfile) {
         String fileName = "export_" + name;
-        if (pProfile!=null) {
+        if (pProfile != null) {
             fileName = fileName + "_" + pProfile.getName();
         }
 
@@ -174,9 +175,10 @@ public class CVSManager {
             return null;
         }
     }
+
     private OutputStream createNewCSVFile(String name, String destFolder, Profile pProfile) {
         String fileName = "export_" + name;
-        if (pProfile!=null) {
+        if (pProfile != null) {
             fileName = fileName + "_" + pProfile.getName();
         }
 
@@ -220,7 +222,7 @@ public class CVSManager {
 
             if (templatesOnly) {
                 records = dbc.getAllRecords();
-            }else{
+            } else {
                 Cursor cursor;
                 cursor = dbc.getAllRecordsByProfile(pProfile);
                 records = dbc.fromCursorToList(cursor);
@@ -261,7 +263,7 @@ public class CVSManager {
 
             for (int i = 0; i < records.size(); i++) {
                 if ((templatesOnly && records.get(i).getRecordType() == RecordType.PROGRAM_TEMPLATE) ||
-                        (!templatesOnly && records.get(i).getRecordType() != RecordType.PROGRAM_TEMPLATE && records.get(i).getProgramRecordStatus()!=ProgramRecordStatus.PENDING)) {
+                        (!templatesOnly && records.get(i).getRecordType() != RecordType.PROGRAM_TEMPLATE && records.get(i).getProgramRecordStatus() != ProgramRecordStatus.PENDING)) {
 
                     csvOutputFonte.write(templatesOnly ? TABLE_PROGRAM_TEMPLATE : TABLE_RECORD);
 
@@ -372,7 +374,7 @@ public class CVSManager {
             ZipOutputStream zipFile = createNewCSVZipFile(PROGRESS_IMAGE_FILE_NAME, destFolder, pProfile);
 
             String fileName = "export_" + PROGRESS_IMAGE_FILE_NAME;
-            if (pProfile!=null) {
+            if (pProfile != null) {
                 fileName = fileName + "_" + pProfile.getName();
             }
             ZipEntry csvEntry = new ZipEntry(fileName + ".csv");
@@ -507,36 +509,36 @@ public class CVSManager {
 
     private boolean exportPrograms(Profile pProfile, String destFolder) {
         try {
-        OutputStream exportFile = createNewCSVFile("Programs", destFolder, null);
-        CsvWriter csvOutput = new CsvWriter(exportFile, ',', StandardCharsets.UTF_8);
+            OutputStream exportFile = createNewCSVFile("Programs", destFolder, null);
+            CsvWriter csvOutput = new CsvWriter(exportFile, ',', StandardCharsets.UTF_8);
 
-        DAOProgram dbcProgram = new DAOProgram(mContext);
-        dbcProgram.open();
+            DAOProgram dbcProgram = new DAOProgram(mContext);
+            dbcProgram.open();
 
-        List<Program> records = dbcProgram.getAll();
+            List<Program> records = dbcProgram.getAll();
 
-        //Write the name of the table and the name of the columns (comma separated values) in the .csv file.
-        csvOutput.write(TABLE_HEAD);
-        csvOutput.write(NAME);
-        csvOutput.write(DESCRIPTION);
-        csvOutput.endRecord();
-
-        for (int i = 0; i < records.size(); i++) {
-            csvOutput.write(TABLE_PROGRAM);
-            csvOutput.write(records.get(i).getName());
-            csvOutput.write(records.get(i).getDescription());
+            //Write the name of the table and the name of the columns (comma separated values) in the .csv file.
+            csvOutput.write(TABLE_HEAD);
+            csvOutput.write(NAME);
+            csvOutput.write(DESCRIPTION);
             csvOutput.endRecord();
+
+            for (int i = 0; i < records.size(); i++) {
+                csvOutput.write(TABLE_PROGRAM);
+                csvOutput.write(records.get(i).getName());
+                csvOutput.write(records.get(i).getDescription());
+                csvOutput.endRecord();
+            }
+            csvOutput.close();
+            dbcProgram.close();
+        } catch (Exception e) {
+            //if there are any exceptions, return false
+            e.printStackTrace();
+            return false;
         }
-        csvOutput.close();
-        dbcProgram.close();
-    } catch (Exception e) {
-        //if there are any exceptions, return false
-        e.printStackTrace();
-        return false;
-    }
-    //If there are no errors, return true.
+        //If there are no errors, return true.
         return true;
-}
+    }
 
     public boolean importDatabase(ZipFile file, Profile pProfile) {
         Enumeration<? extends ZipEntry> entries = file.entries();
@@ -626,7 +628,7 @@ public class CVSManager {
 
                             RecordType record_type = RecordType.fromString(csvRecords.get(RECORD_TYPE));
 
-                            if (record_type==RecordType.PROGRAM_RECORD) {
+                            if (record_type == RecordType.PROGRAM_RECORD) {
                                 long programId;
                                 String programName = TryGetString(csvRecords, PROGRAM_LABEL, "");
                                 Program program = FindOrCreateProgram(programName);
@@ -657,7 +659,7 @@ public class CVSManager {
                                         programId, -1, -1,
                                         template_rest_time, template_order, template_record_status, record_type, template_sets, template_repetitions, template_weight, template_unit, template_second, template_distance, template_distance_unit, template_duration);
                                 recordsList.add(record);
-                            } else if (record_type==RecordType.FREE_RECORD){
+                            } else if (record_type == RecordType.FREE_RECORD) {
                                 Record record = new Record(date, machine.getName(), machine.getId(), pProfile.getId(), sets, repetitions, weight, unit, second, distance, distance_unit, duration, notes, exerciseType);
                                 recordsList.add(record);
                             } else {
@@ -699,7 +701,15 @@ public class CVSManager {
                         String exercice = csvRecords.get(DAOOldCardio.EXERCICE);
                         float distance = Float.parseFloat(csvRecords.get(DAOOldCardio.DISTANCE));
                         int duration = Integer.parseInt(csvRecords.get(DAOOldCardio.DURATION));
-                        dbcCardio.addCardioRecordToFreeWorkout(date, exercice, distance, duration, pProfile.getId(), DistanceUnit.KM);
+                        dbcCardio.addCardioRecordToFreeWorkout(
+                                new CardioRecord()
+                                        .setDate(date)
+                                        .setMachine(exercice)
+                                        .setDistance(distance)
+                                        .setDuration(duration)
+                                        .setProfileId(pProfile.getId())
+                                        .setDistanceUnit(DistanceUnit.MILES)
+                        );
                         dbcCardio.close();
 
                         break;
@@ -853,7 +863,7 @@ public class CVSManager {
                 break;
             }
         }
-        if (bodyPart==null) {
+        if (bodyPart == null) {
             long newItemId = daoBodyPart.add(-1, bodyPartName, "", daoBodyPart.getCount(), BodyPartExtensions.TYPE_MUSCLE);
             bodyPart = daoBodyPart.getBodyPart(newItemId);
         }
@@ -862,7 +872,7 @@ public class CVSManager {
 
     private Program FindOrCreateProgram(String programName) {
         Program program = null;
-        DAOProgram daoProgram= new DAOProgram(mContext);
+        DAOProgram daoProgram = new DAOProgram(mContext);
         daoProgram.open();
         List<Program> programs = daoProgram.getAll();
         for (Program prg : programs) {
@@ -871,7 +881,7 @@ public class CVSManager {
                 break;
             }
         }
-        if (program==null && !programName.isEmpty()) {
+        if (program == null && !programName.isEmpty()) {
             program = new Program(-1, programName, "");
             long newItemId = daoProgram.add(program);
             program.setId(newItemId);
@@ -885,13 +895,13 @@ public class CVSManager {
         daoMachine.open();
         List<Machine> machines = daoMachine.getAll();
         for (Machine lMachine : machines) {
-            if (lMachine.getName().equals(machineName) && lMachine.getType()==exerciseType) {
+            if (lMachine.getName().equals(machineName) && lMachine.getType() == exerciseType) {
                 machine = lMachine;
                 break;
             }
         }
-        if (machine==null) {
-            long newItemId = daoMachine.addMachine(machineName,"", exerciseType, "", false, "");
+        if (machine == null) {
+            long newItemId = daoMachine.addMachine(machineName, "", exerciseType, "", false, "");
             machine = daoMachine.getMachine(newItemId);
         }
         return machine;

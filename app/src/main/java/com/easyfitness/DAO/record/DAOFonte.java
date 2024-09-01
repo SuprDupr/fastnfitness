@@ -7,13 +7,15 @@ import com.easyfitness.DAO.DAOMachine;
 import com.easyfitness.DAO.Machine;
 import com.easyfitness.DAO.Profile;
 import com.easyfitness.DAO.Weight;
+import com.easyfitness.DAO.record.domain.StrengthRecord;
+import com.easyfitness.DAO.record.domain.StrengthTemplate;
 import com.easyfitness.enums.DistanceUnit;
 import com.easyfitness.enums.ExerciseType;
+import com.easyfitness.enums.ProgramRecordStatus;
 import com.easyfitness.enums.RecordType;
 import com.easyfitness.enums.WeightUnit;
 import com.easyfitness.graph.GraphData;
 import com.easyfitness.utils.DateConverter;
-import com.easyfitness.enums.ProgramRecordStatus;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,26 +31,46 @@ public class DAOFonte extends DAORecord {
     public static final int MAX_REP_FCT = 5;
     public static final int ONEREPMAX_FCT = 6;
 
-    private static final String TABLE_ARCHI = KEY + "," + DATE + "," + EXERCISE + "," + SETS + "," + REPS + "," + WEIGHT + "," + WEIGHT_UNIT + "," + PROFILE_KEY + "," + NOTES + "," + EXERCISE_KEY + "," + TIME;
-
     public DAOFonte(Context context) {
         super(context);
     }
 
-    /**
-     * @param pDate       Date
-     * @param pExercise   Machine name
-     * @param pWeightUnit
-     * @param pProfileId
-     */
-    public long addStrengthRecordToFreeWorkout(Date pDate, String pExercise, int pSets, int pReps, float pWeight, WeightUnit pWeightUnit, String pNote, long pProfileId) {
-        return addRecordToFreeWorkout(pDate, pExercise, ExerciseType.STRENGTH, pSets, pReps, pWeight, pWeightUnit, 0, 0, DistanceUnit.KM, 0, pNote, pProfileId);
+    public void addStrengthRecordToFreeWorkout(final StrengthRecord strengthRecord) {
+        addRecordToFreeWorkout(
+                strengthRecord.getDate(),
+                strengthRecord.getExercise(),
+                ExerciseType.STRENGTH,
+                strengthRecord.getSets(),
+                strengthRecord.getReps(),
+                strengthRecord.getWeight(),
+                strengthRecord.getWeightUnit(),
+                0,
+                0,
+                DistanceUnit.KM,
+                0,
+                strengthRecord.getNotes(),
+                strengthRecord.getProfileId()
+        );
     }
 
-    public long addStrengthTemplateToProgram(long pProgramId, Date pDate, String pExerciseName, int pSets, int pReps, float pWeight, WeightUnit pWeightUnit, int restTime, int templateOrder) {
-        return addTemplateToProgram(pDate, pExerciseName, ExerciseType.STRENGTH, pSets, pReps, pWeight,
-                pWeightUnit, 0 , 0, DistanceUnit.KM, 0, "", pProgramId,
-                restTime, templateOrder);
+    public void addStrengthTemplateToProgram(final StrengthTemplate strengthTemplate) {
+        addTemplateToProgram(
+                strengthTemplate.getDate(),
+                strengthTemplate.getExercise(),
+                ExerciseType.STRENGTH,
+                strengthTemplate.getSets(),
+                strengthTemplate.getReps(),
+                strengthTemplate.getWeight(),
+                strengthTemplate.getWeightUnit(),
+                0,
+                0,
+                DistanceUnit.KM,
+                0,
+                "",
+                strengthTemplate.getProgramId(),
+                strengthTemplate.getRestTime(),
+                strengthTemplate.getTemplateOrder()
+        );
     }
 
     /**
@@ -96,24 +118,24 @@ public class DAOFonte extends DAORecord {
                     + " ORDER BY " + DATE_TIME + " ASC";
         } else if (pFunction == DAOFonte.NBSERIE_FCT) {
             selectQuery = "SELECT count(" + KEY + ") , " + LOCAL_DATE + " FROM "
-                + TABLE_NAME
-                + " WHERE " + EXERCISE + "=\"" + pMachine + "\""
-                + " AND " + PROFILE_KEY + "=" + pProfile.getId()
-                + " AND " + TEMPLATE_RECORD_STATUS + "!=" + ProgramRecordStatus.PENDING.ordinal()
-                + " AND " + RECORD_TYPE + "!=" + RecordType.PROGRAM_TEMPLATE.ordinal()
-                + " GROUP BY " + LOCAL_DATE
-                + " ORDER BY " + DATE_TIME + " ASC";
+                    + TABLE_NAME
+                    + " WHERE " + EXERCISE + "=\"" + pMachine + "\""
+                    + " AND " + PROFILE_KEY + "=" + pProfile.getId()
+                    + " AND " + TEMPLATE_RECORD_STATUS + "!=" + ProgramRecordStatus.PENDING.ordinal()
+                    + " AND " + RECORD_TYPE + "!=" + RecordType.PROGRAM_TEMPLATE.ordinal()
+                    + " GROUP BY " + LOCAL_DATE
+                    + " ORDER BY " + DATE_TIME + " ASC";
         } else if (pFunction == DAOFonte.ONEREPMAX_FCT) {
             //https://en.wikipedia.org/wiki/One-repetition_maximum#Brzycki
             selectQuery = "SELECT MAX(" + WEIGHT + " * (36.0 / (37.0 - " + REPS + "))) , " + LOCAL_DATE + " FROM "
-                + TABLE_NAME
-                + " WHERE " + EXERCISE + "=\"" + pMachine + "\""
-                + " AND " + REPS + "<=10"
-                + " AND " + PROFILE_KEY + "=" + pProfile.getId()
-                + " AND " + TEMPLATE_RECORD_STATUS + "!=" + ProgramRecordStatus.PENDING.ordinal()
-                + " AND " + RECORD_TYPE + "!=" + RecordType.PROGRAM_TEMPLATE.ordinal()
-                + " GROUP BY " + LOCAL_DATE
-                + " ORDER BY " + DATE_TIME + " ASC";
+                    + TABLE_NAME
+                    + " WHERE " + EXERCISE + "=\"" + pMachine + "\""
+                    + " AND " + REPS + "<=10"
+                    + " AND " + PROFILE_KEY + "=" + pProfile.getId()
+                    + " AND " + TEMPLATE_RECORD_STATUS + "!=" + ProgramRecordStatus.PENDING.ordinal()
+                    + " AND " + RECORD_TYPE + "!=" + RecordType.PROGRAM_TEMPLATE.ordinal()
+                    + " GROUP BY " + LOCAL_DATE
+                    + " ORDER BY " + DATE_TIME + " ASC";
         } else if (pFunction == DAOFonte.TOTAL_REP_FCT) {
             selectQuery = "SELECT SUM(" + SETS + "*" + REPS + "), " + LOCAL_DATE + " FROM "
                     + TABLE_NAME
@@ -285,7 +307,7 @@ public class DAOFonte extends DAORecord {
         String selectQuery = "SELECT MAX(" + WEIGHT + "), " + WEIGHT_UNIT + " FROM " + TABLE_NAME
                 + " WHERE " + PROFILE_KEY + "=" + p.getId() + " AND " + EXERCISE_KEY + "=" + m.getId()
                 + " AND ( " + TEMPLATE_RECORD_STATUS + "<" + ProgramRecordStatus.SUCCESS.ordinal()
-                + " OR "+ TEMPLATE_RECORD_STATUS + "=" + ProgramRecordStatus.NONE.ordinal() + ")"
+                + " OR " + TEMPLATE_RECORD_STATUS + "=" + ProgramRecordStatus.NONE.ordinal() + ")"
                 + " AND " + RECORD_TYPE + "!=" + RecordType.PROGRAM_TEMPLATE.ordinal();
         mCursor = db.rawQuery(selectQuery, null);
 
@@ -311,12 +333,12 @@ public class DAOFonte extends DAORecord {
         String selectQuery = "SELECT MIN(" + WEIGHT + "), " + WEIGHT_UNIT + " FROM " + TABLE_NAME
                 + " WHERE " + PROFILE_KEY + "=" + p.getId() + " AND " + EXERCISE_KEY + "=" + m.getId()
                 + " AND ( " + TEMPLATE_RECORD_STATUS + "<" + ProgramRecordStatus.SUCCESS.ordinal()
-                + " OR "+ TEMPLATE_RECORD_STATUS + "=" + ProgramRecordStatus.NONE.ordinal() + ")"
+                + " OR " + TEMPLATE_RECORD_STATUS + "=" + ProgramRecordStatus.NONE.ordinal() + ")"
                 + " AND " + RECORD_TYPE + "!=" + RecordType.PROGRAM_TEMPLATE.ordinal();
         mCursor = db.rawQuery(selectQuery, null);
 
         if (mCursor.moveToFirst()) {
-           w = new Weight(mCursor.getFloat(0), WeightUnit.fromInteger(mCursor.getInt(1)));
+            w = new Weight(mCursor.getFloat(0), WeightUnit.fromInteger(mCursor.getInt(1)));
         }
         close();
 
@@ -333,7 +355,7 @@ public class DAOFonte extends DAORecord {
         for (int i = 1; i <= 5; i++) {
             String machine = "Biceps";
             date.setDate(date.getDay() + i * 10);
-            addStrengthRecordToFreeWorkout(date, machine, i * 2, 10 + i, poids * i, WeightUnit.KG, "", mProfile.getId());
+            addStrengthRecordToFreeWorkout(new StrengthRecord(date, machine, i * 2, 10 + i, poids * i, WeightUnit.KG, "", mProfile.getId()));
         }
 
         date = DateConverter.timeToDate(12, 34, 56);
@@ -342,7 +364,7 @@ public class DAOFonte extends DAORecord {
         for (int i = 1; i <= 5; i++) {
             String machine = "Dev Couche";
             date.setDate(date.getDay() + i * 10);
-            addStrengthRecordToFreeWorkout(date, machine, i * 2, 10 + i, poids * i, WeightUnit.KG, "", mProfile.getId());
+            addStrengthRecordToFreeWorkout(new StrengthRecord(date, machine, i * 2, 10 + i, poids * i, WeightUnit.KG, "", mProfile.getId()));
         }
     }
 

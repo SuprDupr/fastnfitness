@@ -53,6 +53,8 @@ import com.easyfitness.DAO.record.DAOFonte;
 import com.easyfitness.DAO.record.DAORecord;
 import com.easyfitness.DAO.record.DAOStatic;
 import com.easyfitness.DAO.record.Record;
+import com.easyfitness.DAO.record.domain.CardioRecord;
+import com.easyfitness.DAO.record.domain.StrengthRecord;
 import com.easyfitness.bodymeasures.BodyPartListFragment;
 import com.easyfitness.enums.DistanceUnit;
 import com.easyfitness.enums.ExerciseType;
@@ -276,7 +278,15 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
 
-                    mDbCardio.addCardioRecordToFreeWorkout(record.getDate(), exerciseName, record.getDistance(), record.getDuration(), record.getProfil().getId(), DistanceUnit.KM);
+                    mDbCardio.addCardioRecordToFreeWorkout(
+                            new CardioRecord()
+                                    .setDate(record.getDate())
+                                    .setMachine(exerciseName)
+                                    .setDistance(record.getDistance())
+                                    .setDuration(record.getDuration())
+                                    .setProfileId(record.getProfil().getId())
+                                    .setDistanceUnit(DistanceUnit.MILES)
+                    );
                 }
                 mDbOldCardio.dropTable();
 
@@ -294,7 +304,6 @@ public class MainActivity extends AppCompatActivity {
             mMigrationBD15done = true;
             savePreferences();
         }
-
 
 
         if (savedInstanceState == null) {
@@ -358,7 +367,7 @@ public class MainActivity extends AppCompatActivity {
             initDEBUGdata();
         }
 
-        if ( !mMigrationToScopedStoragedone) { //do the migration only once.
+        if (!mMigrationToScopedStoragedone) { //do the migration only once.
             migrateDatabase();
         }
 
@@ -394,16 +403,52 @@ public class MainActivity extends AppCompatActivity {
 
     private void initDEBUGdata() {
         if (BuildConfig.DEBUG_MODE) {
-            // do something for a debug build
-            DAOFonte lDbFonte = new DAOFonte(this);
+            final DAOFonte lDbFonte = new DAOFonte(this);
             if (lDbFonte.getCount() == 0) {
-                lDbFonte.addStrengthRecordToFreeWorkout(DateConverter.dateToDate(2019, 7, 1, 12, 34, 56), "Example 1", 1, 10, 40, WeightUnit.KG, "", this.getCurrentProfile().getId());
-                lDbFonte.addStrengthRecordToFreeWorkout(DateConverter.dateToDate(2019, 6, 30, 12, 34, 56), "Example 2", 1, 10, UnitConverter.LbstoKg(60), WeightUnit.LBS, "", this.getCurrentProfile().getId());
+                final StrengthRecord strengthRecord1 = new StrengthRecord()
+                        .setDate(DateConverter.dateToDate(2019, 7, 1, 12, 34, 56))
+                        .setExercise("Example 1")
+                        .setSets(1)
+                        .setReps(10)
+                        .setWeight(40)
+                        .setWeightUnit(WeightUnit.LBS)
+                        .setNotes("")
+                        .setProfileId(this.getCurrentProfile().getId());
+
+                final StrengthRecord strengthRecord2 = new StrengthRecord()
+                        .setDate(DateConverter.dateToDate(2019, 6, 30, 12, 34, 56))
+                        .setExercise("Example 2")
+                        .setSets(1)
+                        .setReps(10)
+                        .setWeight(60)
+                        .setWeightUnit(WeightUnit.LBS)
+                        .setNotes("").setProfileId(this.getCurrentProfile().getId());
+
+                lDbFonte.addStrengthRecordToFreeWorkout(strengthRecord1);
+                lDbFonte.addStrengthRecordToFreeWorkout(strengthRecord2);
             }
+
             DAOCardio lDbCardio = new DAOCardio(this);
             if (lDbCardio.getCount() == 0) {
-                lDbCardio.addCardioRecordToFreeWorkout(DateConverter.dateToDate(2019, 7, 1), "Running Example", 1, 10000, this.getCurrentProfile().getId(), DistanceUnit.KM);
-                lDbCardio.addCardioRecordToFreeWorkout(DateConverter.dateToDate(2019, 7, 31), "Cardio Example", UnitConverter.MilesToKm(2), 20000, this.getCurrentProfile().getId(), DistanceUnit.MILES);
+                lDbCardio.addCardioRecordToFreeWorkout(
+                        new CardioRecord()
+                                .setDate(DateConverter.dateToDate(2019, 7, 1))
+                                .setMachine("Running Example")
+                                .setDistance(1)
+                                .setDuration(10000)
+                                .setProfileId(this.getCurrentProfile().getId())
+                                .setDistanceUnit(DistanceUnit.MILES)
+                );
+
+                lDbCardio.addCardioRecordToFreeWorkout(
+                        new CardioRecord()
+                                .setDate(DateConverter.dateToDate(2019, 7, 31))
+                                .setMachine("Cardio Example")
+                                .setDistance(UnitConverter.MilesToKm(2))
+                                .setDuration(20000)
+                                .setProfileId(this.getCurrentProfile().getId())
+                                .setDistanceUnit(DistanceUnit.MILES)
+                );
             }
             DAOStatic lDbStatic = new DAOStatic(this);
             if (lDbStatic.getCount() == 0) {
@@ -479,8 +524,8 @@ public class MainActivity extends AppCompatActivity {
             //Migrate profile pictures
             DAOProfile daoProfile = new DAOProfile(getBaseContext());
             List<Profile> profileList = daoProfile.getAllProfiles(daoProfile.getWritableDatabase());
-            for (Profile profile:profileList) {
-                if(profile.getPhoto()!=null && !profile.getPhoto().isEmpty()) {
+            for (Profile profile : profileList) {
+                if (profile.getPhoto() != null && !profile.getPhoto().isEmpty()) {
                     File sourceFile = new File(profile.getPhoto());
                     File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
                     if (sourceFile.exists()) {
@@ -505,8 +550,8 @@ public class MainActivity extends AppCompatActivity {
             //Migrate exercises pictures
             DAOMachine daoMachine = new DAOMachine(getBaseContext());
             List<Machine> machineList = daoMachine.getAllMachinesArray();
-            for (Machine machine:machineList) {
-                if(machine.getPicture()!=null && !machine.getPicture().isEmpty()) {
+            for (Machine machine : machineList) {
+                if (machine.getPicture() != null && !machine.getPicture().isEmpty()) {
                     File sourceFile = new File(machine.getPicture());
                     File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
                     if (sourceFile.exists()) {
@@ -568,8 +613,8 @@ public class MainActivity extends AppCompatActivity {
             CVSManager cvsMan = new CVSManager(getActivity().getBaseContext());
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_H_m_s", Locale.getDefault());
             Date date = new Date();
-            String folderName = Environment.DIRECTORY_DOWNLOADS + "/FastnFitness/export/" +  dateFormat.format(date);
-            if (cvsMan.exportDatabase(getCurrentProfile(),folderName)) {
+            String folderName = Environment.DIRECTORY_DOWNLOADS + "/FastnFitness/export/" + dateFormat.format(date);
+            if (cvsMan.exportDatabase(getCurrentProfile(), folderName)) {
                 SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
                 long currentTime = System.currentTimeMillis();
                 SP.edit().putLong("prefLastTimeBackupUTCTime", currentTime).apply();
@@ -729,7 +774,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-        public boolean CreateNewProfile() {
+    public boolean CreateNewProfile() {
         AlertDialog.Builder newProfilBuilder = new AlertDialog.Builder(this);
 
         newProfilBuilder.setTitle(getActivity().getResources().getText(R.string.createProfilTitle));
@@ -955,7 +1000,8 @@ public class MainActivity extends AppCompatActivity {
     private ProgressImagesFragment getProgressImagesFragment() {
         if (mpProgressImageFrag == null)
             mpProgressImageFrag = (ProgressImagesFragment) getSupportFragmentManager().findFragmentByTag(PROGRESSIMAGES);
-        if (mpProgressImageFrag == null) mpProgressImageFrag = ProgressImagesFragment.newInstance(PROGRESSIMAGES, 12);
+        if (mpProgressImageFrag == null)
+            mpProgressImageFrag = ProgressImagesFragment.newInstance(PROGRESSIMAGES, 12);
 
         return mpProgressImageFrag;
     }
