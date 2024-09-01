@@ -6,7 +6,6 @@ import android.database.sqlite.SQLiteDatabase;
 import com.easyfitness.DAO.Profile;
 import com.easyfitness.DAO.record.domain.CardioRecord;
 import com.easyfitness.DAO.record.domain.CardioTemplate;
-import com.easyfitness.R;
 import com.easyfitness.enums.ExerciseType;
 import com.easyfitness.enums.ProgramRecordStatus;
 import com.easyfitness.enums.RecordType;
@@ -23,13 +22,7 @@ public class DAOCardio extends DAORecord {
     public static final int DISTANCE_FCT = 0;
     public static final int DURATION_FCT = 1;
     public static final int SPEED_FCT = 2;
-    public static final int MAXDURATION_FCT = 3;
-    public static final int MAXDISTANCE_FCT = 4;
-    public static final int NBSERIE_FCT = 5;
-
-    private static final String OLD_TABLE_NAME = "EFcardio";
-
-    private static final String TABLE_ARCHI = KEY + "," + DATE + "," + EXERCISE + "," + DISTANCE + "," + DURATION + "," + PROFILE_KEY + "," + TIME + "," + DISTANCE_UNIT;
+    public static final int MAX_DISTANCE_FCT = 4;
 
     public DAOCardio(Context context) {
         super(context);
@@ -72,17 +65,12 @@ public class DAOCardio extends DAORecord {
                 cardioTemplate.getTemplateOrder());
     }
 
-    // Getting Function records
-    public List<GraphData> getFunctionRecords(Profile pProfile, String pMachine,
-                                              int pFunction) {
+    public List<GraphData> getFunctionRecords(
+            final Profile pProfile,
+            final String pMachine,
+            final int pFunction) {
 
-        boolean lfilterMachine = true;
-        boolean lfilterFunction = true;
         String selectQuery = null;
-
-        if (pMachine == null || pMachine.isEmpty() || pMachine.equals(mContext.getResources().getText(R.string.all).toString())) {
-            lfilterMachine = false;
-        }
 
         if (pFunction == DAOCardio.DISTANCE_FCT) {
             selectQuery = "SELECT SUM(" + DISTANCE + "), " + LOCAL_DATE + " FROM " + TABLE_NAME
@@ -110,7 +98,7 @@ public class DAOCardio extends DAORecord {
                     + " AND " + RECORD_TYPE + "!=" + RecordType.PROGRAM_TEMPLATE.ordinal()
                     + " GROUP BY " + LOCAL_DATE
                     + " ORDER BY " + DATE_TIME + " ASC";
-        } else if (pFunction == DAOCardio.MAXDISTANCE_FCT) {
+        } else if (pFunction == DAOCardio.MAX_DISTANCE_FCT) {
             selectQuery = "SELECT MAX(" + DISTANCE + ") , " + LOCAL_DATE + " FROM "
                     + TABLE_NAME
                     + " WHERE " + EXERCISE + "=\"" + pMachine + "\""
@@ -120,34 +108,25 @@ public class DAOCardio extends DAORecord {
                     + " GROUP BY " + LOCAL_DATE
                     + " ORDER BY " + DATE_TIME + " ASC";
         }
-        // case "MEAN" : selectQuery = "SELECT SUM("+ SERIE + "*" + REPETITION +
-        // "*" + WEIGHT +") FROM " + TABLE_NAME + " WHERE " + EXERCISE + "=\"" +
-        // pMachine + "\" AND " + DATE + "=\"" + pDate + "\" ORDER BY " + KEY +
-        // " DESC";
-        // break;
 
-        // Formation de tableau de valeur
-        List<GraphData> valueList = new ArrayList<>();
-        SQLiteDatabase db = this.getReadableDatabase();
+        final List<GraphData> valueList = new ArrayList<>();
+        final SQLiteDatabase db = this.getReadableDatabase();
+
         mCursor = null;
         mCursor = db.rawQuery(selectQuery, null);
 
-        double i = 0;
-
         // looping through all rows and adding to list
         if (mCursor.moveToFirst()) {
+
             do {
-                Date date = DateConverter.DBDateStrToDate(mCursor.getString(1));
-
-                GraphData value = new GraphData(DateConverter.nbDays(date),
+                final Date date = DateConverter.DBDateStrToDate(mCursor.getString(1));
+                final GraphData value = new GraphData(DateConverter.nbDays(date),
                         mCursor.getDouble(0));
-
-                // Adding value to list
                 valueList.add(value);
+
             } while (mCursor.moveToNext());
         }
 
-        // return value list
         return valueList;
     }
 }
